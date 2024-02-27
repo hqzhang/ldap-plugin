@@ -1520,11 +1520,14 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 return FormValidation.ok();
             }
             // extract the submitted details
+            System.out.println("Enter doValidate() and get input");
             JSONObject json = JSONObject.fromObject(IOUtils.toString(req.getInputStream(), Util.fixNull(req.getCharacterEncoding(), StandardCharsets.UTF_8.name())));
+            System.out.println("Enter doValidate() and get input"+json.toString());
             String user = json.getString("testUser");
             String password = json.getString("testPassword");
-            JSONObject realmCfg = json.getJSONObject("securityRealm");
             
+            JSONObject realmCfg = json.getJSONObject("securityRealm");
+            System.out.println("Enter doValidate() and get realmCfg"+realmCfg.toString());
             // instantiate the realm
             LDAPSecurityRealm realm = req.bindJSON(LDAPSecurityRealm.class, realmCfg);
             return validate(realm, user, password);
@@ -1571,6 +1574,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
         public FormValidation validate(LDAPSecurityRealm realm, String user, String password) {
             // we can only do deep validation if the connection is correct
+            System.out.println("Enter validate()user/pass 1 doCheckServer()"+user+password);
             LDAPConfiguration.LDAPConfigurationDescriptor confDescriptor = Jenkins.get().getDescriptorByType(LDAPConfiguration.LDAPConfigurationDescriptor.class);
             for (LDAPConfiguration configuration : realm.getConfigurations()) {
                 FormValidation connectionCheck = confDescriptor.doCheckServer(configuration.getServerUrl(), configuration.getManagerDN(), configuration.getManagerPasswordSecret(),configuration.getRootDN());
@@ -1589,10 +1593,12 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
 
             // can we login?
             LdapUserDetails loginDetails = null;
+            System.out.println("Enter validate()user/pass 1 do authenticate() by user"+user+password);
             try {
                 // need to access direct so as not to update the user details
                 loginDetails = (LdapUserDetails) realm.getSecurityComponents().manager2.authenticate(
                         new UsernamePasswordAuthenticationToken(fixUsername(user), password)).getPrincipal();
+               System.out.println("Enter do authenticate() get loginDetails:"+loginDetails);
                 ok(response, "authentication",
                         jenkins.security.plugins.ldap.Messages.LDAPSecurityRealm_AuthenticationSuccessful());
             } catch (AuthenticationException e) {
@@ -1607,6 +1613,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             Set<String> loginAuthorities = new HashSet<>();
+            System.out.println("Enter validateDisplayName/EmailAddress loginDetails:"+loginDetails);
             if (loginDetails != null) {
                 // report details of the logged in user
                 ok(response, "authentication-username",
@@ -1653,6 +1660,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     .append(jenkins.security.plugins.ldap.Messages.LDAPSecurityRealm_LookupHeader())
                     .append("</div>");
             LdapUserDetails lookUpDetails = null;
+            System.out.println("Enter loadUserByUsername get LdapUserDetails:");
             try {
                 // need to access direct so as not to update the user details
                 lookUpDetails =
@@ -1700,6 +1708,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     potentialLockout = true;
                 }
             }
+            System.out.println("Enter loginDetails and lookUpDetails:");
             if (loginDetails == null && lookUpDetails != null) {
                 // we could not login, so let's report details of the resolved user
                 ok(response, "lookup-username",
@@ -1724,6 +1733,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             Set<String> lookupAuthorities = new HashSet<>();
+            System.out.println("Enter add lookUpDetails.getAuthorities().getAuthority to lookupAuthorities:");
+
             if (lookUpDetails != null) {
                 for (GrantedAuthority a : lookUpDetails.getAuthorities()) {
                     lookupAuthorities.add(a.getAuthority());
@@ -1753,6 +1764,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             // let's check consistency
+            System.out.println("Look loginDetails and lookUpDetails again");
+
             if (loginDetails != null && lookUpDetails != null) {
                 LDAPConfiguration loginConfiguration = realm.getConfigurationFor(loginDetails);
                 LDAPConfiguration lookupConfiguration = realm.getConfigurationFor(lookUpDetails);
@@ -1811,6 +1824,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     }
                 }
                 // email address
+                System.out.println("check email address and lookUpDetails:");
+
                 if (!realm.disableMailAddressResolver && StringUtils.isNotBlank(loginConfiguration.getMailAddressAttributeName()))
                 {
                     Attribute loginAttr = loginAttributes.get(loginConfiguration.getMailAddressAttributeName());
@@ -1835,6 +1850,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     }
                 }
                 // groups
+                System.out.println("check groups  and lookUpDetails:");
+
                 if (loginAuthorities.equals(lookupAuthorities)) {
                     ok(response, "consistency",
                             jenkins.security.plugins.ldap.Messages.LDAPSecurityRealm_GroupMembershipMatch());
@@ -1845,6 +1862,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             // lets check group lookup if we can
+            
             Set<String> groups = new HashSet<>(loginAuthorities);
             Set<String> badGroups = new TreeSet<>();
             groups.addAll(lookupAuthorities);

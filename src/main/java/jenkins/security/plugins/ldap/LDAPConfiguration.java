@@ -405,6 +405,7 @@ public class LDAPConfiguration extends AbstractDescribableImpl<LDAPConfiguration
 
         @POST
         public FormValidation doCheckServer(@QueryParameter String value, @QueryParameter String managerDN, @QueryParameter Secret managerPasswordSecret,@QueryParameter String rootDN) {
+            System.out.println("Enter doCheckServer() by InitialDirContext(env)");
             String server = value;
             String managerPassword = Secret.toString(managerPasswordSecret);
 
