@@ -1708,7 +1708,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     potentialLockout = true;
                 }
             }
-            System.out.println("Enter loginDetails and lookUpDetails:");
+            System.out.println("Enter loginDetails and lookUpDetails:"+ loginDetails.toString()+":"+lookUpDetails.toString());
             if (loginDetails == null && lookUpDetails != null) {
                 // we could not login, so let's report details of the resolved user
                 ok(response, "lookup-username",
@@ -1733,7 +1733,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             Set<String> lookupAuthorities = new HashSet<>();
-            System.out.println("Enter add lookUpDetails.getAuthorities().getAuthority to lookupAuthorities:");
+           
 
             if (lookUpDetails != null) {
                 for (GrantedAuthority a : lookUpDetails.getAuthorities()) {
@@ -1763,8 +1763,9 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                     }
                 }
             }
+            System.out.println("Get  lookupAuthorities:"+lookupAuthorities.toString());
             // let's check consistency
-            System.out.println("Look loginDetails and lookUpDetails again");
+            System.out.println("Get loginDetails and lookUpDetails again");
 
             if (loginDetails != null && lookUpDetails != null) {
                 LDAPConfiguration loginConfiguration = realm.getConfigurationFor(loginDetails);
@@ -1862,7 +1863,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 }
             }
             // lets check group lookup if we can
-            
+            System.out.println("start check groups lookup:");
+
             Set<String> groups = new HashSet<>(loginAuthorities);
             Set<String> badGroups = new TreeSet<>();
             groups.addAll(lookupAuthorities);
@@ -1906,6 +1908,8 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                 );
             }
             // and we are done, report the results
+            System.out.println("finish check all:");
+
             return FormValidation.okWithMarkup(response.toString());
         }
 
