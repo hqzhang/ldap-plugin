@@ -1734,6 +1734,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
             }
             Set<String> lookupAuthorities = new HashSet<>();
            
+            
 
             if (lookUpDetails != null) {
                 for (GrantedAuthority a : lookUpDetails.getAuthorities()) {
@@ -1755,6 +1756,7 @@ public class LDAPSecurityRealm extends AbstractPasswordBasedSecurityRealm {
                             if (AUTHENTICATED_AUTHORITY2.equals(a)) {
                                 continue;
                             }
+                            System.out.println("Get  lookup users group:"+Util.escape(a.getAuthority()));
                             authorities.add("<code>" + Util.escape(a.getAuthority()) + "</code>");
                         }
                         ok(response, "lookup-groups",
